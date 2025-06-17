@@ -1,5 +1,5 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
+from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
 import json, os
 
 TOKEN = "7491927850:AAEhqhwu1s94zjIi9MeYyCLWrZNLQXOUJIo"
@@ -58,7 +58,7 @@ def cycle_limit_menu():
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Привет! Это бот!", reply_markup=main_menu())
 
-# Обработка нажатий на кнопки
+# Обработка кнопок
 async def handle_query(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
@@ -120,16 +120,10 @@ async def handle_query(update: Update, context: ContextTypes.DEFAULT_TYPE):
         save_settings()
         await query.edit_message_text(f"Установлено количество циклов: 🔄 {cycles}", reply_markup=autobuy_menu())
 
+# Запуск приложения (для Render)
+app = ApplicationBuilder().token(TOKEN).build()
+app.add_handler(CommandHandler("start", start))
+app.add_handler(CallbackQueryHandler(handle_query))
+
 if __name__ == "__main__":
-    import asyncio
-
-    async def main():
-        app = Application.builder().token(TOKEN).build()
-        await app.bot.delete_webhook(drop_pending_updates=True)
-
-        app.add_handler(CommandHandler("start", start))
-        app.add_handler(CallbackQueryHandler(handle_query))
-
-        await app.run_polling()
-
-    asyncio.run(main())
+    app.run_polling()
